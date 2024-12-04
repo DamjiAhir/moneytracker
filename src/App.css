@@ -14,18 +14,30 @@ h1 {
   color: #ffff;
 }
 form input {
-  color: #ddd;
+  color: #777;
   background-color: transparent;
   width: 100%;
   padding: 5px;
   border: 1.4px solid #30313d;
   border-radius: 5px;
 }
-
-form input[type="datetime-local"] {
+.transactionType {
+  background-color: transparent;
   color: #777;
+  border: 1.4px solid #30313d;
+  border-radius: 5px;
 }
-
+option {
+  font-size: 14px;
+  padding: 10px;
+  background-color: #17181f;
+}
+option[value="Expense"] {
+  color: #c11;
+}
+option[value="Income"] {
+  color: #1c1;
+}
 .basic {
   display: flex;
   gap: 5px;
