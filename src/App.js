@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -7,6 +7,18 @@ function App() {
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
   const [discription, setDiscription] = useState("");
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    getTransactions().then((transactions) => setTransactions(transactions));
+  }, [type]);
+
+  async function getTransactions() {
+    const uri = process.env.REACT_APP_API_URI + "/transactions";
+    const responce = await fetch(uri);
+    return await responce.json();
+  }
+
   function addTransaction(e) {
     e.preventDefault();
     const uri = process.env.REACT_APP_API_URI + "/transaction";
@@ -16,16 +28,32 @@ function App() {
       body: JSON.stringify({ type, amount, discription, date }),
     })
       .then((response) => {
-        console.log(response);
         return response.json();
       })
-      .then((json) => console.log("Result:", json))
+      .then((json) => {
+        setAmount("");
+        setDate("");
+        setDiscription("");
+        setType("");
+        console.log("Result:", json);
+      })
       .catch((error) => console.error("Error:", error.message));
+  }
+  let balance = 0;
+  for (let i = 0; i < transactions.length; i++) {
+    if (transactions[i].type === "Income") {
+      balance += transactions[i].amount;
+    } else {
+      balance -= transactions[i].amount;
+    }
   }
 
   return (
     <main>
-      <h1>{rupeeSymbol} 500</h1>
+      <h1 className={balance < 0 ? "amount-red" : ""}>
+        {rupeeSymbol}
+        {balance}
+      </h1>
       <div className="form">
         <form onSubmit={addTransaction}>
           <div className="basic">
@@ -43,7 +71,7 @@ function App() {
               <option value="Expense">Expense</option>
             </select>
             <input
-              type="text"
+              type="number"
               placeholder="amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -71,34 +99,30 @@ function App() {
         </form>
       </div>
       <div className="transactions">
-        <div className="transaction">
-          <div className="leftside">
-            <h4 className="name">Domain</h4>
-          </div>
-          <div className="rightside">
-            <h4 className="amount-red">-{rupeeSymbol}2200</h4>
-            <p className="date">03-12-2024</p>
-          </div>
-        </div>
-
-        <div className="transaction">
-          <div className="leftside">
-            <h4 className="name">Dig website</h4>
-          </div>
-          <div className="rightside">
-            <h4 className="amount-green">+{rupeeSymbol}10000</h4>
-            <p className="  date">03-12-2024</p>
-          </div>
-        </div>
-        <div className="transaction">
-          <div className="leftside">
-            <h4 className="name"> Pythom cource</h4>
-          </div>
-          <div className="rightside">
-            <h4 className="amount-red">- {rupeeSymbol}15000</h4>
-            <p className=" date">03-12-2024</p>
-          </div>
-        </div>
+        {transactions.length > 0 &&
+          transactions
+            .map((transactions) => (
+              <div className="transaction">
+                <div className="leftside">
+                  <h3 className="name">{transactions.discription}</h3>
+                </div>
+                <div className="rightside">
+                  <h4
+                    className={
+                      transactions.type === "Income"
+                        ? "amount-green"
+                        : "amount-red"
+                    }
+                  >
+                    {transactions.type === "Income" ? "+" : "-"}
+                    {rupeeSymbol}
+                    {transactions.amount}
+                  </h4>
+                  <p className="date">{transactions.date}</p>
+                </div>
+              </div>
+            ))
+            .reverse()}
       </div>
     </main>
   );
